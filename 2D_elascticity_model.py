@@ -5,6 +5,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
+import os
 
 '''
 This script is used to create the PINN model of 2D Elasticity example. The example is taken from 
@@ -154,6 +155,7 @@ residum_v = np.hstack([X[:,0].reshape(-1,1),X[:,1].reshape(-1,1),residum_v])
 #####################################################################################
 ##################### True displacement in u direction ##############################
 #####################################################################################
+filename = os.path.join(os.getcwd(),"2d_elasticity_results/2d_analy_u.png")
 x, y, z = res_u_analy[:,0],res_u_analy[:,1],res_u_analy[:,2]
 
 # Set up a regular grid of interpolation points
@@ -169,13 +171,14 @@ plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
            extent=[x.min(), x.max(), y.min(), y.max()])
 plt.scatter(x, y, c=z)
 plt.colorbar()
-plt.savefig("/home/a11btasa/git_repos/phd_materials/pinns/models/deepxde/beam_results/2d_analy_u.png")
+plt.savefig(filename)
 plt.clf()
 
 #-----------------------------------------------------------------------------------------
 ##########################################################################################
 ##################### Predicted displacement in u direction ##############################
 ##########################################################################################
+filename = os.path.join(os.getcwd(),"2d_elasticity_results/2d_pred_u.png")
 x, y, z = res_u_pred[:,0],res_u_pred[:,1],res_u_pred[:,2]
 
 # Set up a regular grid of interpolation points
@@ -190,13 +193,14 @@ plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
            extent=[x.min(), x.max(), y.min(), y.max()])
 plt.scatter(x, y, c=z)
 plt.colorbar()
-plt.savefig("/home/a11btasa/git_repos/phd_materials/pinns/models/deepxde/beam_results/2d_pred_u.png")
+plt.savefig(filename)
 plt.clf()
 
 #---------------------------------------------------------------------------
 ############################################################################
 ##################### Residuum in u direction ##############################
 ############################################################################
+filename = os.path.join(os.getcwd(),"2d_elasticity_results/2d_resid_u.png")
 x, y, z = residum_u[:,0],residum_u[:,1],residum_u[:,2]
 
 # Set up a regular grid of interpolation points
@@ -211,12 +215,13 @@ plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
            extent=[x.min(), x.max(), y.min(), y.max()])
 plt.scatter(x, y, c=z)
 plt.colorbar()
-plt.savefig("/home/a11btasa/git_repos/phd_materials/pinns/models/deepxde/beam_results/2d_resid_u.png")
+plt.savefig(filename)
 plt.clf()
 #------------------------------------------------------------------------------------
 #####################################################################################
 ##################### True displacement in v direction ##############################
 #####################################################################################
+filename = os.path.join(os.getcwd(),"2d_elasticity_results/2d_analy_v.png")
 x, y, z = res_v_analy[:,0],res_v_analy[:,1],res_v_analy[:,2]
 
 # Set up a regular grid of interpolation points
@@ -232,13 +237,14 @@ plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
            extent=[x.min(), x.max(), y.min(), y.max()])
 plt.scatter(x, y, c=z)
 plt.colorbar()
-plt.savefig("/home/a11btasa/git_repos/phd_materials/pinns/models/deepxde/beam_results/2d_analy_v.png")
+plt.savefig(filename)
 plt.clf()
 
 #-----------------------------------------------------------------------------------------
 ##########################################################################################
 ##################### Predicted displacement in v direction ##############################
 ##########################################################################################
+filename = os.path.join(os.getcwd(),"2d_elasticity_results/2d_pred_v.png")
 x, y, z = res_v_pred[:,0],res_v_pred[:,1],res_v_pred[:,2]
 
 # Set up a regular grid of interpolation points
@@ -253,13 +259,14 @@ plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
            extent=[x.min(), x.max(), y.min(), y.max()])
 plt.scatter(x, y, c=z)
 plt.colorbar()
-plt.savefig("/home/a11btasa/git_repos/phd_materials/pinns/models/deepxde/beam_results/2d_pred_v.png")
+plt.savefig(filename)
 plt.clf()
 
 #---------------------------------------------------------------------------
 ############################################################################
 ##################### Residuum in v direction ##############################
 ############################################################################
+filename = os.path.join(os.getcwd(),"2d_elasticity_results/2d_resid_v.png")
 x, y, z = residum_v[:,0],residum_v[:,1],residum_v[:,2]
 
 # Set up a regular grid of interpolation points
@@ -274,4 +281,4 @@ plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
            extent=[x.min(), x.max(), y.min(), y.max()])
 plt.scatter(x, y, c=z)
 plt.colorbar()
-plt.savefig("/home/a11btasa/git_repos/phd_materials/pinns/models/deepxde/beam_results/2d_resid_v.png")
+plt.savefig(filename)
