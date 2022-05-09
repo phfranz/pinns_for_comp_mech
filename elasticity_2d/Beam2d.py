@@ -11,7 +11,7 @@ from pyevtk.hl import unstructuredGridToVTK
 path_utils = str(Path(__file__).parent.parent.absolute()) + "/utils"
 sys.path.append(path_utils)
 
-from elasticity_utils import stress_plane_stress, momentum_2d_plane_stress, problem_parameters
+from elasticity_utils import stress_plane_stress, momentum_2d_plane_stress, problem_parameters, zero_neumman_plane_stress_x, zero_neumman_plane_stress_y
 from geometry_utils import calculate_boundary_normals
 from custom_geometry import GmshGeometry2D
 from gmsh_models import Block_2D
@@ -22,11 +22,7 @@ import elasticity_utils
 The correct order for the normals --> 1 2 1 1
 
 Reference solution:
-https://dro.dur.ac.uk/5010/
-Fig 1, BC as in Fig 2 E, analytical solution equation 4, 5.
-
-For the full reference:
-https://www.academia.edu/18196585/The_use_of_Timoshenkos_exact_solution_for_a_cantilever_beam_in_adaptive_analysis
+https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.504.4507&rep=rep1&type=pdf
 '''
 
 gmsh_options = {"General.Terminal":1, "Mesh.Algorithm": 6}
@@ -43,10 +39,12 @@ shear_y = 0.01
 Inertia = 1/12*h**3
 
 # change global variables in elasticity_utils
-e_1 = 2000#1.333
-nu_1 = 0.3#0.333
-elasticity_utils.lame = e_1*nu_1/((1+nu_1)*(1-2*nu_1))#1153.846
-elasticity_utils.shear = e_1/(2*(1+nu_1))#769.23
+e_1 = 2000
+nu_1 = 0.3
+elasticity_utils.lame = e_1*nu_1/((1+nu_1)*(1-2*nu_1))
+elasticity_utils.shear = e_1/(2*(1+nu_1))
+# zero neumann BC functions need the geom variable to be 
+elasticity_utils.geom = geom
 
 def neumann_x(x, y, X):
     '''
@@ -73,34 +71,6 @@ def neumann_y(x, y, X):
     y_loc = x[:,1:2][cond]
     
     return sigma_yx_n_x + shear_y/(2*Inertia)*(y_loc - h/2)*(y_loc + h/2)*(-1)#*normals[:,0:1]
-
-def zero_neumann_x(x, y, X):
-    '''
-    Represents the x component of the zero traction
-    '''
-    
-    sigma_xx, sigma_yy, sigma_xy = stress_plane_stress(x,y)
-
-    normals, cond = calculate_boundary_normals(X,geom)
-
-    sigma_xx_n_x = sigma_xx[cond]*normals[:,0:1]
-    sigma_xy_n_y = sigma_xy[cond]*normals[:,1:2]
-
-    return sigma_xx_n_x + sigma_xy_n_y
-
-def zero_neumann_y(x, y, X):
-    '''
-    Represents the y component of the zero traction
-    '''
-
-    sigma_xx, sigma_yy, sigma_xy = stress_plane_stress(x,y)
-
-    normals, cond = calculate_boundary_normals(X,geom)
-
-    sigma_yx_n_x = sigma_xy[cond]*normals[:,0:1]
-    sigma_yy_n_y = sigma_yy[cond]*normals[:,1:2]
-
-    return sigma_yx_n_x + sigma_yy_n_y
 
 
 nu, lame, shear, e_modul = problem_parameters()
@@ -133,19 +103,19 @@ def right(x, on_boundary):
 
 bc1 = dde.DirichletBC(geom, fun_u_x, left, component=0)
 bc2 = dde.DirichletBC(geom, fun_u_y, left, component=1)
-bc3 = dde.OperatorBC(geom, zero_neumann_x, top_bottom)
-bc4 = dde.OperatorBC(geom, zero_neumann_y, top_bottom)
+bc3 = dde.OperatorBC(geom, zero_neumman_plane_stress_x, top_bottom)
+bc4 = dde.OperatorBC(geom, zero_neumman_plane_stress_y, top_bottom)
 bc5 = dde.OperatorBC(geom, neumann_x, right)
 bc6 = dde.OperatorBC(geom, neumann_y, right)
 
-
+n_dummy = 1
 data = dde.data.PDE(
     geom,
     momentum_2d_plane_stress,
     [bc1, bc2, bc3, bc4, bc5, bc6],
-    num_domain=1500,
-    num_boundary=500,
-    num_test=500,
+    num_domain=n_dummy,
+    num_boundary=n_dummy,
+    num_test=n_dummy,
     train_distribution = "Sobol",
 )
 
@@ -194,9 +164,9 @@ Inertia = 1/12*h**3
 u_x_analy = shear_y*y/(6*e_modul*Inertia)*((6*l-3*x)*x + (2+nu)*(y**2-h**2/4))
 u_y_analy = -shear_y/(6*e_modul*Inertia)*(3*nu*y**2*(l-x) + (4+5*nu)*h**2*x/4 + (3*l-x)*x**2)
 
-sigma_xx_analy = shear_y*(l-x)*y/l
+sigma_xx_analy = shear_y*(l-x)*y/Inertia
 sigma_yy_analy = np.zeros(sigma_xx_analy.shape[0])
-sigma_xy_analy = shear_y/(2*l)*(y - h/2)*(y + h/2)
+sigma_xy_analy = shear_y/(2*Inertia)*(y - h/2)*(y + h/2)
 
 combined_disp = tuple(np.vstack((np.array(displacement[:,0].tolist()),np.array(displacement[:,1].tolist()),np.zeros(displacement[:,0].shape[0]))))
 combined_disp_analy = tuple(np.vstack((u_x_analy.flatten(),u_y_analy.flatten(),np.zeros(u_x_analy.shape[0]))))
