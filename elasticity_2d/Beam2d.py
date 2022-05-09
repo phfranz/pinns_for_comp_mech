@@ -1,4 +1,4 @@
-from re import L
+#from re import L
 import deepxde as dde
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,7 +22,11 @@ import elasticity_utils
 The correct order for the normals --> 1 2 1 1
 
 Reference solution:
-https://www.scinapse.io/papers/2033651126
+https://dro.dur.ac.uk/5010/
+Fig 1, BC as in Fig 2 E, analytical solution equation 4, 5.
+
+For the full reference:
+https://www.academia.edu/18196585/The_use_of_Timoshenkos_exact_solution_for_a_cantilever_beam_in_adaptive_analysis
 '''
 
 gmsh_options = {"General.Terminal":1, "Mesh.Algorithm": 6}
@@ -105,7 +109,7 @@ def fun_u_x(x):
     x_loc = x[:,0:1]
     y_loc = x[:,1:2]
     u_x_analy = shear_y*y_loc/(6*e_modul*Inertia)*(2+nu)*(y_loc**2-h**2/4)
-    
+
     return u_x_analy
 
 def fun_u_y(x):
@@ -190,7 +194,7 @@ Inertia = 1/12*h**3
 u_x_analy = shear_y*y/(6*e_modul*Inertia)*((6*l-3*x)*x + (2+nu)*(y**2-h**2/4))
 u_y_analy = -shear_y/(6*e_modul*Inertia)*(3*nu*y**2*(l-x) + (4+5*nu)*h**2*x/4 + (3*l-x)*x**2)
 
-sigma_xx_analy = shear_y*(l-x)*y/L
+sigma_xx_analy = shear_y*(l-x)*y/l
 sigma_yy_analy = np.zeros(sigma_xx_analy.shape[0])
 sigma_xy_analy = shear_y/(2*l)*(y - h/2)*(y + h/2)
 
