@@ -1,4 +1,3 @@
-#from re import L
 import deepxde as dde
 import numpy as np
 import matplotlib.pyplot as plt
