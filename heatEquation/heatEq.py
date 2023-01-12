@@ -13,7 +13,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import deepxde as dde
-from deepxde.backend import torch
+from deepxde.backend import backend as bkd 
+from deepxde.backend import tf
 
 def pde(x, y):
     """
@@ -36,8 +37,9 @@ def initial_condition(x):
     x : x passed to this function by the dde.pde is the NN input. Therefore,
         we must first extract the space coordinate.
     """
-    x_s = torch.tensor(x[:,0:1])
-    return torch.cos(np.pi*x_s)
+    # x_s = bkd.as_tensor(x[:,0:1])
+    x_s = x[:,0:1]
+    return tf.cos(np.pi*x_s)
 
 # Boundary condition
 def boundary_condition(x):
@@ -49,10 +51,11 @@ def boundary_condition(x):
     x : x passed to this function by the dde.pde is the NN input. Therefore,
         we must first extract the time coordinate.
     """
-    x_t = torch.tensor(x[:,1:2])
+    x_t = x[:,1:2]
+    # x_t = bkd.as_tensor(x_t)
     k = 0.1
     
-    return -torch.exp(-k*(np.pi)**2*x_t)
+    return -tf.exp(-k*(np.pi)**2*x_t)
 
 
 # Analytical solution
@@ -122,61 +125,69 @@ ic = dde.IC(spaceTimeDomain, initial_condition , boundary_initial)
 
 # First guess on some scaling of the individual terms in the loss function
 # ToDo: Can we derive a physics-informed scaling of these terms?
-lw = [1, 100, 100]
+lw = [1, 1, 1]
 
 # Define the PDE problem and configurations of the network:
 data = dde.data.TimePDE(spaceTimeDomain, pde, [bc, ic], num_domain=250,
-                        num_boundary=32, num_initial=16, num_test=254,
+                        num_boundary=64, num_initial=21, num_test=254,
                         # auxiliary_var_function=diffusionCoeff
                         )
 
-net = dde.nn.FNN([2] + [20] * 3 + [1], "tanh", "Glorot normal")
-model = dde.Model(data, net)
+for i in range(1,10,1):
+    print(" ")
+    print(" ")
+    print("i= "+str(i))
+    print(" ")
+    print(" ")
+    net = dde.nn.FNN([2] + [10*i] * 3 + [1], "tanh", "Glorot normal")
+    model = dde.Model(data, net)
 
-# Build and train the model:
-model.compile("adam", lr=1e-3, loss_weights=lw)
-losshistory, train_state = model.train(epochs=5000)
+    # Build and train the model:
+    model.compile("adam", lr=1e-3, loss_weights=lw)
+    losshistory, train_state = model.train(epochs=10000)
 
-# Plot/print the results
-dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+    # Plot/print the results
+    dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 
 
-model.compile("L-BFGS")
-losshistory, train_state = model.train()
-# Plot/print the results
-dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+    # model.compile("L-BFGS")
+    # losshistory, train_state = model.train()
+    # # Plot/print the results
+    # dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 
 # postProcess(model)
 
 
 # Define some query points on our compuational domain.
 # Number of points in each dimension:
-x_dim, t_dim = (21, 26)
+    x_dim, t_dim = (21, 26)
 
 # Bounds of 'x' and 't':
-x_min, t_min = (xmin, tmin)
-x_max, t_max = (xmax, tmax)
+    x_min, t_min = (xmin, tmin)
+    x_max, t_max = (xmax, tmax)
 
 # Create tensors:
-t = np.linspace(t_min, t_max, num=t_dim).reshape(t_dim, 1)
-x = np.linspace(x_min, x_max, num=x_dim).reshape(x_dim, 1)
+    t = np.linspace(t_min, t_max, num=t_dim).reshape(t_dim, 1)
+    x = np.linspace(x_min, x_max, num=x_dim).reshape(x_dim, 1)
 
-xx, tt = np.meshgrid(x, t)
-X = np.vstack((np.ravel(xx), np.ravel(tt))).T
+    xx, tt = np.meshgrid(x, t)
+    X = np.vstack((np.ravel(xx), np.ravel(tt))).T
 
 # Compute and plot the exact solution for these query points
-k = 0.1
-usol = analytical_solution(xx, tt, k)
-plt.scatter(xx,tt,c=usol)
-plt.show()
+    k = 0.1
+    usol = analytical_solution(xx, tt, k)
+    # plt.scatter(xx,tt,c=usol)
+    # plt.show()
+    
+    fig, ax = plt.subplots()
 
 # Plot model prediction.
-y_pred = model.predict(X).reshape(t_dim, x_dim)
-plt.scatter(xx,tt,c=y_pred)
-plt.xlabel('x')
-plt.ylabel('t')
-ax = plt.gca()
-ax.set_aspect('equal','box')
-#plt.colorbar(cax=ax)
-plt.savefig('heatEqPred.pdf')
-plt.show()
+    y_pred = model.predict(X).reshape(t_dim, x_dim)
+    # usol - y_pred
+    s = ax.scatter(xx,tt,c=abs(usol - y_pred))
+    ax.set_xlabel('x')
+    ax.set_ylabel('t')
+    fig.colorbar(s, ax=ax)
+    ax.set_aspect('equal','box')
+    plt.savefig('heatEqAbsError'+str(i)+'.pdf')
+    plt.show()
