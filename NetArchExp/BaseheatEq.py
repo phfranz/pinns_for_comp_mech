@@ -189,7 +189,7 @@ dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 
 # Define some query points on our compuational domain.
 # Number of points in each dimension:
-x_dim, t_dim = (21, 26)
+x_dim, t_dim = (3, 3) # changed
 
 # Bounds of 'x' and 't':
 x_min, t_min = (xmin, tmin)
@@ -209,7 +209,7 @@ plt.scatter(xx, tt, c=usol)
 plt.show()
 
 # Plot model prediction.
-y_pred = model.predict(X).reshape(t_dim, x_dim)
+y_pred = model.predict(X).reshape(t_dim, x_dim) # y_pred[4]
 plt.scatter(xx, tt, c=y_pred)
 plt.xlabel('x')
 plt.ylabel('t')
@@ -241,7 +241,7 @@ adamtrainloss3 = lbfgsloss['3'][5]
 adamtestloss1 = lbfgsloss['4'][5]
 adamtestloss2 = lbfgsloss['5'][5]
 adamtestloss3 = lbfgsloss['6'][5]
-lbfgstrainloss1 = lbfgsloss['1'][lossrow]
+lbfgstrainloss1 = lbfgsloss['1'][lossrow] # lets try -1 to index the last row
 lbfgstrainloss2 = lbfgsloss['2'][lossrow]
 lbfgstrainloss3 = lbfgsloss['3'][lossrow]
 lbfgstestloss1 = lbfgsloss['4'][lossrow]
