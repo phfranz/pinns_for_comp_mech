@@ -1,19 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Solves a space-time model problem based on the heat equation.
-Follows Section 3.3.1 in Compressible Flow Simulation with Space-Time FE
-
-Created on Wed Nov 17 13:27:23 2021
-
-@author: maxvondanwitz
-"""
-
 import matplotlib.pyplot as plt
 import numpy as np
 
 import deepxde as dde
 from deepxde.backend import tf
+
 import time
 import pandas
 
@@ -73,14 +63,13 @@ def analytical_solution(x, t, k):
     return np.exp(-k*np.pi**2*t) * np.cos(np.pi*x)
 
 def postProcess(model):
-    '''
-    Performs heat equation specific post-processing of a trained model.
+   
+    # Performs heat equation specific post-processing of a trained model.
 
-    Parameters
-    ----------
-    X : trained deepxde model
+    # Parameters
+    # ----------
+    # X : trained deepxde model
 
-    '''
     import os, sys
     from pathlib import Path
     path_utils = str(Path(__file__).parent.parent.absolute()) + "/utils"
@@ -144,25 +133,27 @@ data = dde.data.TimePDE(spaceTimeDomain, pde, [bc, ic], num_domain=250,
 #         neurons = 10
 #         while neurons < 11: 
             
-layer = NUMBERLAYER
+layer = NUMBERLAYERS
 neurons = NUMBERNEURONS
 actifunc = 'ACTIVATIONFUNCTION'
-
-print('Activationfucntion: '+str(actifunc))
-print('Replaced File: Layer: '+str(layer))
-print('Replaced File: Neuron: '+str(neurons))
 
 net = dde.nn.FNN([2] + [neurons] * layer + [1], actifunc , "Glorot normal")
 model = dde.Model(data, net)
 
 # Build and train the model:
 model.compile("adam", lr=1e-3, loss_weights=lw)
+
 st=time.time()
+
 losshistory, train_state = model.train(epochs=5000)
+
 et=time.time()
+
 adam_time= et - st
+
 print('Adam Training took', adam_time, 'seconds')
 print()
+
 dde.utils.external.dat_to_csv('train.dat','adamtrain.csv',"x")
 dde.utils.external.dat_to_csv('test.dat','adamtest.csv',"xy")
 dde.utils.external.dat_to_csv('loss.dat','adamloss.csv',"s123456")
@@ -171,25 +162,29 @@ dde.utils.external.dat_to_csv('loss.dat','adamloss.csv',"s123456")
 # note time taken and steps needed
 
 model.compile("L-BFGS")
+
 st=time.time()
+
 losshistory, train_state = model.train()
+
 et=time.time()
+
 lbfgs_time= et - st
+
 print('Lbfgs Training took', lbfgs_time, 'seconds')
 print()
-
-dde.utils.external.dat_to_csv('train.dat','lbfgstrain.csv',"x")
-dde.utils.external.dat_to_csv('test.dat','lbfgstest.csv',"xy")
-dde.utils.external.dat_to_csv('loss.dat','lbfgsloss.csv',"s123456")
 
 # Plot/print the results
 dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 
+dde.utils.external.dat_to_csv('train.dat','lbfgstrain.csv',"x")
+dde.utils.external.dat_to_csv('test.dat','lbfgstest.csv',"xy")
+dde.utils.external.dat_to_csv('loss.dat','lbfgsloss.csv',"s123456")
 # postProcess(model)
 
 # Define some query points on our compuational domain.
 # Number of points in each dimension:
-x_dim, t_dim = (3, 3) # changed
+x_dim, t_dim = (3, 3)
 
 # Bounds of 'x' and 't':
 x_min, t_min = (xmin, tmin)
@@ -209,7 +204,7 @@ plt.scatter(xx, tt, c=usol)
 plt.show()
 
 # Plot model prediction.
-y_pred = model.predict(X).reshape(t_dim, x_dim) # y_pred[4]
+y_pred = model.predict(X).reshape(t_dim, x_dim)
 plt.scatter(xx, tt, c=y_pred)
 plt.xlabel('x')
 plt.ylabel('t')
@@ -219,36 +214,34 @@ ax.set_aspect('equal', 'box')
 plt.savefig('heatEqPred.pdf')
 plt.show()
 
+Diff = pandas.DataFrame.abs(
+    pandas.DataFrame(
+        usol - y_pred
+        )
+    )
+Mean = pandas.DataFrame.mean(
+    pandas.DataFrame.mean(Diff)
+    )
+
 adamtest=pandas.read_csv('adamtest.csv')
 adamtrain=pandas.read_csv('adamtrain.csv')
 lbfgsloss=pandas.read_csv('lbfgsloss.csv')
 lbfgstest=pandas.read_csv('lbfgstest.csv')
 lbfgstrain=pandas.read_csv('lbfgstrain.csv')
 
-
-
-steps = lbfgsloss['s'][7]
-lossrow = 7
-if steps == 6000:
-        lossrow = 8
-        steps = lbfgsloss['s'][8]
-if steps == 7000:
-        lossrow = 9
-        steps =lbfgsloss['s'][9]
+steps = lbfgsloss['s'].iloc[-1]
 adamtrainloss1 = lbfgsloss['1'][5]
 adamtrainloss2 = lbfgsloss['2'][5]
 adamtrainloss3 = lbfgsloss['3'][5]
 adamtestloss1 = lbfgsloss['4'][5]
 adamtestloss2 = lbfgsloss['5'][5]
 adamtestloss3 = lbfgsloss['6'][5]
-lbfgstrainloss1 = lbfgsloss['1'][lossrow] # lets try -1 to index the last row
-lbfgstrainloss2 = lbfgsloss['2'][lossrow]
-lbfgstrainloss3 = lbfgsloss['3'][lossrow]
-lbfgstestloss1 = lbfgsloss['4'][lossrow]
-lbfgstestloss2 = lbfgsloss['5'][lossrow]
-lbfgstestloss3 = lbfgsloss['6'][lossrow]
-
-#maybe problem if lbfgs takes more than 1000 steps
+lbfgstrainloss1 = lbfgsloss['1'].iloc[-1]
+lbfgstrainloss2 = lbfgsloss['2'].iloc[-1]
+lbfgstrainloss3 = lbfgsloss['3'].iloc[-1]
+lbfgstestloss1 = lbfgsloss['4'].iloc[-1]
+lbfgstestloss2 = lbfgsloss['5'].iloc[-1]
+lbfgstestloss3 = lbfgsloss['6'].iloc[-1]
 
 with open('documentation.csv','a') as fd:
     fd.write(
@@ -258,11 +251,7 @@ with open('documentation.csv','a') as fd:
         +str(adamtrainloss1)+','+str(adamtrainloss2)+','+str(adamtrainloss3)+','
         +str(adamtestloss1)+','+str(adamtestloss2)+','+str(adamtestloss3)+','
         +str(lbfgstrainloss1)+','+str(lbfgstrainloss2)+','+str(lbfgstrainloss3)+','
-        +str(lbfgstestloss1)+','+str(lbfgstestloss2)+','+str(lbfgstestloss3)
+        +str(lbfgstestloss1)+','+str(lbfgstestloss2)+','+str(lbfgstestloss3)+','
+        +str(Mean)
         +'\n'
         )
-
-#add specific points of the heat equation to compare with exact solution
-
-print('Layer: '+str(layer))
-print('Neuron: '+str(neurons))
