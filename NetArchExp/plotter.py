@@ -72,7 +72,7 @@ for x in xlist:
     ylist=['steps']
     for s in ylist:
         stepsgraph=Doc.iloc[x:x+10].plot(y=s, title=str(name))
-        for s in range (1,6,1):
+        for w in range (1,6,1):
             Doc.iloc[x+w*10:x+(w+1)*10].plot(y=s,ax=stepsgraph, title=str(name)+' '+str(s))      
         stepsgraph.set_ylabel("Anzahl Schritte")
         stepsgraph.set_xlabel(str(standardxlabel))
@@ -85,7 +85,7 @@ for x in xlist:
     
     ylist=['steps']
     for s in ylist: 
-        stepsgraph=Doc.iloc[x+50:x+61].plot.bar(y=s, title=str(name)+' '+str(t))
+        stepsgraph=Doc.iloc[x+50:x+61].plot.bar(y=s, title=str(name)+' '+str(s))
         stepsgraph.set_ylabel("Anzahl Schritte")
         stepsgraph.set_xlabel(str(barxlabel))
         stepsgraph.get_legend().remove()
