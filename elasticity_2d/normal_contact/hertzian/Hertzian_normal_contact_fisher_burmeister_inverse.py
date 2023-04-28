@@ -19,7 +19,7 @@ from utils.elasticity import elasticity_utils
 from utils.contact_mech import contact_utils
 
 '''
-Solves Hertzian normal contact example inluding simulation data from BACI.
+Solves inverse Hertzian normal contact example using simulation data from BACI to identify the applied pressure.
 
 @author: tsahin
 '''
