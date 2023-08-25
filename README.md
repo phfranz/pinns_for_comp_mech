@@ -62,10 +62,10 @@ For cluster, we should use `conda` since we had issues in terms of package insta
     ```bash
     conda activate pinn-env
     ```
-4. To test cluster, submit a job on a compute node. This is achieved through `test_cluster.sh` (full path: pinnswithdxde/tests/integration_tests/cluster/test_cluster.sh).
+4. To test cluster, submit a job on a compute node. This is achieved through `test_cluster.sh` (full path: pinns_for_comp_mech/tests/integration_tests/cluster/test_cluster.sh).
 
     ```bash
-    $ sbatch $HOME/pinnswithdxde/tests/integration_tests/cluster/test_cluster.sh
+    $ sbatch $HOME/pinns_for_comp_mech/tests/integration_tests/cluster/test_cluster.sh
     ```
     Number of threads is set in `test_cluster.sh` file. TensorFlow needs to be `intra_op_parallelism_threads` and `inter_op_parallelism_threads` parameters set. Thus, we give  `tf_cluster_settings.py` to the slurm job via sbatch. This enables TensorFlow to set OMP parameters that defined in `test_cluster.sh`.
 
