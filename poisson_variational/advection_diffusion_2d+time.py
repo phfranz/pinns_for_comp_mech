@@ -20,7 +20,7 @@ from utils.vpinns.v_pde import VariationalPDE
 import gmsh
 
 '''
-Solving 1D advection-diffusion equation via VPINNS
+Solving 2D time dependent advection-diffusion equation via vPINNS
 
 author: @phfranz, Jan' 24
 
@@ -36,16 +36,9 @@ def boundary_condition(x):
 
     """
     Evaluates the boundary condition.
-
-    Parameters
-    ----------
-    x : x passed to this function by the dde.pde is the NN input. Therefore,
-        we must first extract the time and space coordinates x_t and x_s.
     """
-    k = 0.1
-    a = 1
 
-    return -np.sin(np.pi*(x[:,0:1]-a*x[:,1:2]))*np.exp(-k*np.pi**2*x[:,1:2])
+    return 0
 
 def initial_condition(x):
     """
@@ -56,17 +49,19 @@ def initial_condition(x):
     x : x passed to this function by the dde.pde is the NN input. Therefore,
         we must first extract the spatial coordinate x_s.
         
-    """   
-    return -np.sin(np.pi*x[:,0:1])
-
+    """       
+    dist=(x[:,0:1]-0.5)**2+(x[:,1:2]-0.5)**2 
+    return np.minimum(0.5,np.exp(-100*dist))
+    
 
 # Define GMSH and geometry parameters (quasi-rectangular mesh)
 gmsh_options = {"General.Terminal":1, "Mesh.Algorithm": 11}
 coord_left_corner=[-1,0]
 coord_right_corner=[1,2]
 
+
 # create a block
-block_2d = Block_2D(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.1, gmsh_options=gmsh_options)
+block_2d = Block_3D(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.1, gmsh_options=gmsh_options)
 
 quad_rule = GaussQuadratureRule(rule_name="gauss_labotto", dimension=2, ngp=3) # gauss_legendre gauss_labotto, 3D not possible yet
 coord_quadrature, weight_quadrature = quad_rule.generate() # in parameter space 
