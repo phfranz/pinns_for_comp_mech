@@ -10,7 +10,7 @@ from deepxde.icbc.boundary_conditions import npfunc_range_autocache
 from deepxde import utils as deepxde_utils
 from deepxde import backend as bkd
 
-from utils.geometry.gmsh_models import Block_2D
+from utils.geometry.gmsh_models import Block_3D
 from utils.geometry.custom_geometry import GmshGeometryElement
 
 from utils.vpinns.quad_rule import GaussQuadratureRule
@@ -25,13 +25,6 @@ Solving 2D time dependent advection-diffusion equation via vPINNS
 author: @phfranz, Jan' 24
 
 '''
-
-def u_exact(x):
-    a = 1
-    k = 0.1
-
-    return -np.sin(np.pi*(x[:,0:1]-a*x[:,1:2]))*np.exp(-k*np.pi**2*x[:,1:2])
-
 def boundary_condition(x):
 
     """
@@ -54,14 +47,14 @@ def initial_condition(x):
     return np.minimum(0.5,np.exp(-100*dist))
     
 
-# Define GMSH and geometry parameters (quasi-rectangular mesh)
+# Define GMSH and geometry parameters (algorithm 11: quasi-rectangular mesh)
 gmsh_options = {"General.Terminal":1, "Mesh.Algorithm": 11}
-coord_left_corner=[-1,0]
-coord_right_corner=[1,2]
+coord_left_corner=[0,0,0]
+coord_right_corner=[1,1,1]
 
 
 # create a block
-block_2d = Block_3D(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.1, gmsh_options=gmsh_options)
+block_3d = Block_3D(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.1, gmsh_options=gmsh_options)
 
 quad_rule = GaussQuadratureRule(rule_name="gauss_labotto", dimension=2, ngp=3) # gauss_legendre gauss_labotto, 3D not possible yet
 coord_quadrature, weight_quadrature = quad_rule.generate() # in parameter space 
@@ -71,7 +64,7 @@ test_function, test_function_derivative = get_test_function_properties(n_test_fu
 # approach: 2: 
 
 # generate gmsh model
-gmsh_model = block_2d.generateGmshModel(visualize_mesh=False)
+gmsh_model = block_3d.generateGmshModel(visualize_mesh=False)
 
 revert_curve_list = []
 revert_normal_dir_list = [1,1,1,1]
@@ -175,7 +168,7 @@ coord_left_corner=[-1,0]
 coord_right_corner=[1,2]
 
 # create a block
-block_2d = Block_2D(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.05, gmsh_options=gmsh_options)
+block_2d = Block_3D(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.05, gmsh_options=gmsh_options)
 
 # generate gmsh model
 gmsh_model = block_2d.generateGmshModel(visualize_mesh=False)

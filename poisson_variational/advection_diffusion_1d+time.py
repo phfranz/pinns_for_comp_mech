@@ -148,7 +148,7 @@ if weak:
 else:
     data = dde.data.PDE(geom, 
                         pde, 
-                        bc,
+                        [bc_l, bc_r, ic],
                         num_domain=n_dummy, 
                         num_boundary=n_dummy, 
                         solution=u_exact, 
