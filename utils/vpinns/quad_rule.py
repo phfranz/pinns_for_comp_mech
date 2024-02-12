@@ -55,6 +55,17 @@ class GaussQuadratureRule:
             #common_weight = weights[:,0]*weights[:,1]
             
             return coord_quadrature_2d, weight_quadrature_2d #common_weight      
+        
+        elif self.dimension == 3: 
+            coord_quadrature_1d, weight_quadrature_1d = leggauss(self.ngp)
+
+            coord_quadrature_x, coord_quadrature_y, coord_quadrature_z= np.meshgrid(coord_quadrature_1d,coord_quadrature_1d,coord_quadrature_1d)
+            coord_quadrature_3d=np.array((coord_quadrature_x.ravel(), coord_quadrature_y.ravel(), coord_quadrature_z.ravel())).T
+            
+            weight_quadrature_x, weight_quadrature_y, weight_quadrature_z= np.meshgrid(weight_quadrature_1d,weight_quadrature_1d, weight_quadrature_1d)
+            weight_quadrature_3d=np.array((weight_quadrature_x.ravel(), weight_quadrature_y.ravel(), weight_quadrature_z.ravel())).T
+            
+            return coord_quadrature_3d, weight_quadrature_3d
     
     def gauss_labotto(self):
         
@@ -120,6 +131,15 @@ class GaussQuadratureRule:
             weight_quadrature_2d=np.array((weight_quadrature_x.ravel(), weight_quadrature_y.ravel())).T
             
             return coord_quadrature_2d, weight_quadrature_2d
+        
+        elif self.dimension == 3: 
+            coord_quadrature_x, coord_quadrature_y, coord_quadrature_z= np.meshgrid(coord_quadrature,coord_quadrature,coord_quadrature)
+            coord_quadrature_3d=np.array((coord_quadrature_x.ravel(), coord_quadrature_y.ravel(), coord_quadrature_z.ravel())).T
+            
+            weight_quadrature_x, weight_quadrature_y, weight_quadrature_z= np.meshgrid(weight_quadrature,weight_quadrature, weight_quadrature)
+            weight_quadrature_3d=np.array((weight_quadrature_x.ravel(), weight_quadrature_y.ravel(), weight_quadrature_z.ravel())).T
+            
+            return coord_quadrature_3d, weight_quadrature_3d
             
     
     @staticmethod
