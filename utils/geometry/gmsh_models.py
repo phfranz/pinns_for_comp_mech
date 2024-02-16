@@ -393,7 +393,7 @@ class Block_3D_Structured(object):
             if '-nopopup' not in sys.argv:
                 gmsh.fltk.run()
 
-        gmsh.finalize() 
+        #gmsh.finalize() 
 
         return gmsh_model      
 

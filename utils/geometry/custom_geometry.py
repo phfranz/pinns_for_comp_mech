@@ -736,7 +736,11 @@ class GmshGeometryElement(Geometry):
         #         node_coords_x_boundary.astype(config.real(np)) if node_coords_x_boundary is not None else node_coords_x_boundary, \
         #         node_coords_x_inside.astype(config.real(np)) if node_coords_x_inside is not None else node_coords_x_inside
     
-    def get_element_info(self):
+    def get_element_info(self): 
+        
+        ### adapt this function for 3d hexagonal elements
+        ### adapt get jacobian for 3d
+
         #self.mapped_coordinates = []
         #self.jacobian = []
         #self.element_weights = []
@@ -752,11 +756,18 @@ class GmshGeometryElement(Geometry):
         element_id = 0
         
         for element_tag in self.gmsh_model.mesh.getElements(self.dim, -1)[1][0]:
-            if self.gmsh_model.mesh.getElement(element_tag)[1].shape[0] > self.dim*2:
-                raise ValueError("Use linear elements.")
+
+            test = self.gmsh_model.mesh.getElement(element_tag)
+
+            #if self.gmsh_model.mesh.getElement(element_tag)[1].shape[0] > self.dim*2:
+            #    raise ValueError("Use linear elements.")
             
             coordinate_list = []
-            for dof in range(self.dim*2):
+            # self.dim*2
+            for dof in range(8):
+
+                test = self.gmsh_model.mesh.getElement(element_tag)
+
                 node_id = self.gmsh_model.mesh.getElement(element_tag)[1][dof]
                 coordinate_list.append(self.gmsh_model.mesh.getNode(node_id)[0][0:self.dim])
             
