@@ -16,7 +16,7 @@ from deepxde.icbc.boundary_conditions import npfunc_range_autocache
 from deepxde import utils as deepxde_utils
 from deepxde import backend as bkd
 
-from utils.geometry.gmsh_models import Block_3D
+from utils.geometry.gmsh_models import Block_3D_Structured
 from utils.geometry.custom_geometry import GmshGeometryElement
 
 from utils.vpinns.quad_rule import GaussQuadratureRule
@@ -59,16 +59,30 @@ gmsh_options = {"General.Terminal":1, "Mesh.Algorithm": 11}
 coord_left_corner=[0,0,0]
 coord_right_corner=[1,1,1]
 
-
 # create a block
-block_3d = Block_3D(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.2) #, gmsh_options=gmsh_options)
+block_3d = Block_3D_Structured(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.2)
 
-quad_rule = GaussQuadratureRule(rule_name="gauss_legendre", dimension=3, ngp=3) # gauss_legendre gauss_labotto, 
+# -----------------------------------------------------------------------------------
+# new structure for subsequent lines
+# -----------------------------------------------------------------------------------
+# 1. Choose number of shape functions
+# 2. Compute highest polynomial degree among shape functions depending on their number
+# 3. Compute required number of Gauss-points for highest shape function -> open question, ask Max & Marco
+# 4. Compute Gauss-points for quadrature and corresponding weights
+# 5. Compute and evaluate shape functions at Gauss-points
+
+n_test_func_x = 5 # -> max degree of Legendre polynomial
+n_test_func_y = 5
+n_test_func_z = 5
+
+n_gp = 5 #np.ceil((n_test_func_x+1)/2)
+
+# it seems that one can take legendre polynomial as test functions, shape functions are not necessary
+
+quad_rule = GaussQuadratureRule(rule_name="gauss_legendre", dimension=2, ngp=n_gp) # gauss_legendre gauss_labotto, 
 coord_quadrature, weight_quadrature = quad_rule.generate() # in parameter space 
 
-n_test_func = 10
-test_function, test_function_derivative = get_test_function_properties(n_test_func, coord_quadrature, approach="2") #modified legendre polynoms, zero on boundary (weak form!), reinforce Neumann boundary conditions
-# approach: 2: 
+test_function, test_function_derivative = get_test_function_properties(n_test_func_x, coord_quadrature, approach="2") #modified legendre polynoms, zero on boundary (weak form!), reinforce Neumann boundary conditions
 
 # generate gmsh model
 gmsh_model = block_3d.generateGmshModel(visualize_mesh=False)
@@ -82,7 +96,7 @@ geom = GmshGeometryElement(gmsh_model,
                            weight_quadrature=weight_quadrature, 
                            test_function=test_function, 
                            test_function_derivative=test_function_derivative, 
-                           n_test_func=n_test_func,
+                           n_test_func=n_test_func_x,
                            revert_curve_list=revert_curve_list, 
                            revert_normal_dir_list=revert_normal_dir_list)
 

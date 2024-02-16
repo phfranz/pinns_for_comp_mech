@@ -251,6 +251,7 @@ class Block_3D(object):
         l = x1 - x0
         h = y1 - y0
         w = z1 - z0 
+        
         # Mesh size.
         lcar = self.mesh_size * min(h,l,w)
 
@@ -287,6 +288,115 @@ class Block_3D(object):
                 gmsh.fltk.run()
 
         return gmsh_model
+
+class Block_3D_Structured(object):
+    """
+    Define structured grid for cuboid using structured hexahedral elements
+    
+    """
+
+    def __init__(self, coord_left_corner, coord_right_corner, mesh_size=0.1, gmsh_options=None):
+        self.coord_left_corner = coord_left_corner
+        self.coord_right_corner = coord_right_corner
+        self.mesh_size = mesh_size
+        self.gmsh_options = gmsh_options
+
+
+    def generateGmshModel(self, visualize_mesh=False):
+        '''
+        Generates a 3D block.
+
+        Parameters
+        ----------
+        visualize_mesh : boolean
+            a booelan value to show the mesh using Gmsh or not
+        Returns 
+        -------
+        gmsh_model: Object
+            gmsh model 
+        '''
+
+        # Parameters
+        x0 = self.coord_left_corner[0]
+        y0 = self.coord_left_corner[1]
+        z0 = self.coord_left_corner[2]
+        x1 = self.coord_right_corner[0]
+        y1 = self.coord_right_corner[1]
+        z1 = self.coord_right_corner[2]
+        assert(x1>x0)
+        assert(y1>y0)
+        assert(z1>z0)
+        l = x1 - x0
+        h = y1 - y0
+        w = z1 - z0 
+        
+        # Mesh size.
+        lcar = self.mesh_size * min(h,l,w)
+
+
+        # initialize gmsh
+        gmsh.initialize(sys.argv) 
+
+        # create gmsh model instance
+        gmsh_model = gmsh.model
+        factory = gmsh.model.geo
+        
+        # Geometry
+        # points in x-y plane
+        p1 = factory.addPoint(0., 0., 0., lcar)
+        p2 = factory.addPoint(l, 0., 0., lcar)
+        p3 = factory.addPoint(0., h, 0., lcar)
+        p4 = factory.addPoint(l, h, 0., lcar)
+        
+        # lines of rectangle in x-y plane
+        l1 = factory.addLine(p3, p4)
+        l2 = factory.addLine(p4, p2)
+        l3 = factory.addLine(p2, p1)
+        l4 = factory.addLine(p1, p3)
+    
+        # curve loops
+        cl1 = factory.addCurveLoop([l3, l4, l1, l2])
+        
+        # surfaces
+        s1 = factory.addPlaneSurface([cl1])
+
+        # extrusion in z-direction
+        n_element_z = np.ceil(w/lcar)
+        factory.extrude([(2, s1)], 0., 0., w,
+                        [n_element_z], recombine=True)
+
+        factory.synchronize()
+
+        # Meshing
+        #gmsh_model = gmsh.model.mesh
+
+        # transfinite curves
+        n_nodes_x = int(np.ceil(l/lcar))+1
+        n_nodes_y = int(np.ceil(h/lcar))+1
+        # "Progression" 1 is default
+        gmsh_model.mesh.setTransfiniteCurve(l1, numNodes=n_nodes_x)
+        gmsh_model.mesh.setTransfiniteCurve(l2, numNodes=n_nodes_y)
+        gmsh_model.mesh.setTransfiniteCurve(l3, numNodes=n_nodes_x)
+        gmsh_model.mesh.setTransfiniteCurve(l4, numNodes=n_nodes_y)
+
+        # transfinite surfaces
+        gmsh_model.mesh.setTransfiniteSurface(s1)
+        #meshFact.setTransfiniteSurface(s2)
+        #meshFact.setTransfiniteSurface(s3)
+
+        # mesh
+        gmsh_model.mesh.generate(2)
+        gmsh_model.mesh.recombine()
+        gmsh_model.mesh.generate(3)
+
+        if visualize_mesh:
+            if '-nopopup' not in sys.argv:
+                gmsh.fltk.run()
+
+        gmsh.finalize() 
+
+        return gmsh_model      
+
 
 class Rectangle_4PointBending(object):
     def __init__(self, l_beam, h_beam, region_size_dict, mesh_size=0.15, refine_factor=12, gmsh_options=None):

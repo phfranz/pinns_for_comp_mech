@@ -9,6 +9,10 @@ import matplotlib.pyplot as plt
 from deepxde.icbc.boundary_conditions import npfunc_range_autocache
 from deepxde import utils as deepxde_utils
 from deepxde import backend as bkd
+import sys
+
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir) 
 
 from utils.geometry.gmsh_models import Block_2D
 from utils.geometry.custom_geometry import GmshGeometryElement
@@ -118,7 +122,7 @@ def weak_form(inputs, outputs, beg, n_e, n_gp, g_jacobian, g_weights, g_test_fun
     du_xx = dde.grad.hessian(outputs, inputs, i=0, j=0)[beg:] #specify component for vector fields
     
     # considers Jacobian for space transformation and weights for numerical integration
-    weighted_residual = -g_weights[:,0:1]*g_weights[:,1:2]*(du_t+a*du_x-k*du_xx)*vx_x*vy_y*g_jacobian # what grid do we have??
+    weighted_residual = -g_weights[:,0:1]*g_weights[:,1:2]*(du_t+a*du_x-k*du_xx)*vx*vy*g_jacobian # what grid do we have??
     return bkd.reshape(weighted_residual, (n_e, n_gp))
 
 def boundary_l(x, on_boundary):
