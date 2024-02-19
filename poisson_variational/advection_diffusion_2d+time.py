@@ -63,11 +63,11 @@ coord_right_corner=[1,1,1]
 block_3d = Block_3D_Structured(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.2)
 
 # -----------------------------------------------------------------------------------
-# new structure for subsequent lines
+# structure for subsequent lines
 # -----------------------------------------------------------------------------------
 # 1. Choose number of shape functions
 # 2. Compute highest polynomial degree among shape functions depending on their number
-# 3. Compute required number of Gauss-points for highest shape function -> open question, ask Max & Marco
+# 3. Compute minimum number of Gauss-points for highest shape function -> open question, ask Max & Marco
 # 4. Compute Gauss-points for quadrature and corresponding weights
 # 5. Compute and evaluate shape functions at Gauss-points
 
@@ -79,7 +79,7 @@ n_gp = 5 #np.ceil((n_test_func_x+1)/2)
 
 # it seems that one can take legendre polynomial as test functions, shape functions are not necessary
 
-quad_rule = GaussQuadratureRule(rule_name="gauss_legendre", dimension=2, ngp=n_gp) # gauss_legendre gauss_labotto, 
+quad_rule = GaussQuadratureRule(rule_name="gauss_legendre", dimension=3, ngp=n_gp) # gauss_legendre gauss_labotto, 
 coord_quadrature, weight_quadrature = quad_rule.generate() # in parameter space 
 
 test_function, test_function_derivative = get_test_function_properties(n_test_func_x, coord_quadrature, approach="2") #modified legendre polynoms, zero on boundary (weak form!), reinforce Neumann boundary conditions
@@ -132,8 +132,6 @@ def weak_form(inputs, outputs, beg, n_e, n_gp, g_jacobian, g_weights, g_test_fun
     return bkd.reshape(weighted_residual, (n_e, n_gp))
 
 
-
-
 def boundary_x0(x, on_boundary):
     return on_boundary and dde.utils.isclose(x[0], 0) # plane where x=0 and y,t are arbitrary
 
@@ -169,14 +167,14 @@ if weak:
                         num_domain=n_dummy, 
                         num_boundary=n_dummy
                         )
-else:
-    data = dde.data.PDE(geom, 
-                        pde, 
-                        bc,
-                        num_domain=n_dummy, 
-                        num_boundary=n_dummy, 
-                        solution=u_exact, 
-                        num_test=n_dummy)
+# else:
+#     data = dde.data.PDE(geom, 
+#                         pde, 
+#                         bc,
+#                         num_domain=n_dummy, 
+#                         num_boundary=n_dummy, 
+#                         solution=u_exact, 
+#                         num_test=n_dummy)
 
 layer_size = [2] + [50] * 3 + [1]
 activation = "tanh"
@@ -204,7 +202,7 @@ coord_left_corner=[0,0,0]
 coord_right_corner=[1,1,1]
 
 # create a block
-block_3d = Block_3D(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.05, gmsh_options=gmsh_options)
+block_3d = Block_3D_Structured(coord_left_corner=coord_left_corner, coord_right_corner=coord_right_corner, mesh_size=0.05, gmsh_options=gmsh_options)
 
 # generate gmsh model
 gmsh_model = block_3d.generateGmshModel(visualize_mesh=False)

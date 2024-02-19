@@ -542,7 +542,7 @@ class GmshGeometryElement(Geometry):
         
         return n[mask]
 
-    def fun_boundary_normal_global(self):
+    def fun_boundary_normal_global(self): # just for 2D; find vectors perpendicular to tangent vectors, check for boundary normals in gmsh
         """Compute the unit normal on the geometry boundary"""
 
         fig = plt.figure(figsize=(8, 8), dpi=80)
@@ -755,22 +755,23 @@ class GmshGeometryElement(Geometry):
         
         element_id = 0
         
-        for element_tag in self.gmsh_model.mesh.getElements(self.dim, -1)[1][0]:
+        for element_tag in self.gmsh_model.mesh.getElements(self.dim, -1)[1][0]: #element ids, over all elements
 
             test = self.gmsh_model.mesh.getElement(element_tag)
 
-            #if self.gmsh_model.mesh.getElement(element_tag)[1].shape[0] > self.dim*2:
-            #    raise ValueError("Use linear elements.")
+            if self.gmsh_model.mesh.getElement(element_tag)[1].shape[0] > self.dim*2:
+               raise ValueError("Use linear elements.")
             
             coordinate_list = []
-            # self.dim*2
-            for dof in range(8):
+           
+            for dof in range(2**self.dim): #get node information
 
                 test = self.gmsh_model.mesh.getElement(element_tag)
 
                 node_id = self.gmsh_model.mesh.getElement(element_tag)[1][dof]
-                coordinate_list.append(self.gmsh_model.mesh.getNode(node_id)[0][0:self.dim])
+                coordinate_list.append(self.gmsh_model.mesh.getNode(node_id)[0][0:self.dim]) #functionality at gmsh, add coordinates of each element in physical space [8x3] for one element
             
+            # get map between physical- and natural domain
             element_mapped_coordinate = self.get_mapped_coordinates(coordinate_list)
             self.mapped_coordinates[element_id*self.n_gp:(element_id+1)*self.n_gp,:] = element_mapped_coordinate
             
@@ -840,7 +841,8 @@ class GmshGeometryElement(Geometry):
         if self.dim == 2:
             psi_x = self.coord_quadrature[:,0:1]
             psi_y = self.coord_quadrature[:,1:2]
-            
+            # add psi_z if self.dim == 3
+
             DN1_psi_x = -1/4*(1-psi_y)
             DN2_psi_x = 1/4*(1-psi_y)
             DN3_psi_x = 1/4*(1+psi_y)
@@ -867,5 +869,7 @@ class GmshGeometryElement(Geometry):
             jacob = J11*J22 - J12*J21
             
             #print(jacob)
- 
+
+
+            # check 3D implementation with squared element
         return jacob
