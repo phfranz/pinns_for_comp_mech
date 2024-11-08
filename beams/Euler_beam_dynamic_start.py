@@ -74,7 +74,7 @@ data = dde.data.TimePDE(
     num_domain=2500,
     num_boundary=50,
     num_initial=50,
-    solution=sol,
+    solution = sol,
     num_test=1000,
 )
 
@@ -93,23 +93,23 @@ losshistory, train_state = model.train(iterations=2000, display_every=100)
 dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 
 
-output_dir="C:/Users/fran_pl/Desktop/pinns_for_comp_mech/beams/plots"
-fname="case_2_time_final"
-csv_file = output_dir + "/" + fname + ".csv"
+#output_dir="C:/Users/fran_pl/Desktop/pinns_for_comp_mech/beams/plots"
+#fname="case_2_time_final"
+#csv_file = output_dir + "/" + fname + ".csv"
 
-X_train, y_train, X_test, y_test, best_y, best_ystd = train_state.packed_data()
-df_X_test = pd.DataFrame(X_test, columns=["x", "t"])
-df_y_best = pd.DataFrame(best_y, columns=["w_predicted"])
-df_y_test = pd.DataFrame(y_test, columns=["w_truth"])
-df_combined = pd.concat([df_X_test, df_y_best, df_y_test], axis=1)
-df_combined.to_csv(csv_file, index=False)
+#X_train, y_train, X_test, y_test, best_y, best_ystd = train_state.packed_data()
+#df_X_test = pd.DataFrame(X_test, columns=["x", "t"])
+#df_y_best = pd.DataFrame(best_y, columns=["w_predicted"])
+#df_y_test = pd.DataFrame(y_test, columns=["w_truth"])
+#df_combined = pd.concat([df_X_test, df_y_best, df_y_test], axis=1)
+#df_combined.to_csv(csv_file, index=False)
 
 
 
-loss_fname = fname + "_" + "loss.dat"
-train_fname = fname + "_" + "train.dat"
-test_fname = fname + "_" + "test.dat"
-dde.saveplot(losshistory, train_state, issave=True, isplot=True, plot_name=fname,
-loss_fname=loss_fname, train_fname=train_fname, test_fname=test_fname, 
-output_dir=output_dir)
-
+#loss_fname = fname + "_" + "loss.dat"
+#train_fname = fname + "_" + "train.dat"
+#test_fname = fname + "_" + "test.dat"
+#dde.saveplot(losshistory, train_state, issave=True, isplot=True, plot_name=fname,
+#loss_fname=loss_fname, train_fname=train_fname, test_fname=test_fname, 
+#output_dir=output_dir)
+#'
